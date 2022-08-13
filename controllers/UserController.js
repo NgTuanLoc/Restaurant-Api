@@ -1,20 +1,29 @@
 import { PrismaClient } from '@prisma/client';
+import { StatusCodes } from 'http-status-codes';
+
 const prisma = new PrismaClient();
 
 const createUser = async (req, res) => {
 	try {
-		const { firstName, lastName } = req.body;
-		const data = await prisma.users.create({
-			data: { firstName, lastName },
+		const { fullName, email, password } = req.body;
+		const data = await prisma.user.create({
+			data: { fullName, email, password },
 		});
-		res.status(200).send(data);
+		res.status(StatusCodes.OK).send(data);
 	} catch (error) {
-		res.status(500).send(error);
+		res.status(StatusCodes.INTERNAL_SERVER_ERROR).send('Fail to create user');
 	}
 };
 
 const getAllUser = async (req, res) => {
-	const data = await prisma.users.findMany();
+	const data = await prisma.user.findMany({
+		include: {
+			Food: true,
+			Order: true,
+			RatingRestaurant: true,
+			LikeRestaurant: true,
+		},
+	});
 	res.status(200).send(data);
 };
 
@@ -22,66 +31,69 @@ const getUserById = async (req, res) => {
 	try {
 		const { id } = req.params;
 
-		const data = await prisma.users.findFirst({
+		const data = await prisma.user.findFirst({
 			where: {
 				id: id,
 			},
 		});
 		if (data) {
-			res.status(200).send(data);
+			res.status(StatusCodes.OK).send(data);
 		} else {
-			res.status(500).send(`User ${id} not exist`);
+			res.status(StatusCodes.NOT_FOUND).send(`User ${id} not exist`);
 		}
 	} catch (error) {
-		res.status(500).send('Fail to get user by id');
+		res
+			.status(StatusCodes.INTERNAL_SERVER_ERROR)
+			.send('Fail to get user by id');
 	}
 };
 
 const deleteUserById = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const data = await prisma.users.findFirst(id);
+		const data = await prisma.user.findFirst(id);
 
 		if (data) {
-			await prisma.users.delete({
+			await prisma.user.delete({
 				where: {
 					id: id,
 				},
 			});
 
-			res.status(200).send(`Delete user ${id} successful`);
+			res.status(StatusCodes.OK).send(`Delete user ${id} successful`);
 		} else {
-			res.status(500).send(`Delete user ${id} failed`);
+			res.status(StatusCodes.NOT_FOUND).send(`Delete user ${id} failed`);
 		}
 	} catch (error) {
-		res.status(500).send('Fail to delete user by id');
+		res
+			.status(StatusCodes.INTERNAL_SERVER_ERROR)
+			.send('Fail to delete user by id');
 	}
 };
 
 const updateUserById = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const { firstName, lastName } = req.body;
-		const data = await prisma.users.findFirst(id);
+		const { fullName, email, password } = req.body;
+		const data = await prisma.user.findFirst(id);
 
 		if (data) {
-			await prisma.users.update({
+			await prisma.user.update({
 				where: { id: id },
 				data: {
-					firstName,
-					lastName,
+					fullName,
+					email,
+					password,
 				},
 			});
-			res.status(200).send(`Update User ${id} successful`);
+			res.status(StatusCodes.OK).send(`Update User ${id} successful`);
 		} else {
-			res.status(500).send(`Update user ${id} failed`);
+			res.status(StatusCodes.NOT_FOUND).send(`Update user ${id} failed`);
 		}
 	} catch (error) {
-		console.log(
-			'🚀 ~ file: UserController.js ~ line 72 ~ updateUserById ~ error',
-			error
-		);
-		res.status(500).send('Fail to update user by id');
+		res
+			.status(StatusCodes.INTERNAL_SERVER_ERROR)
+			.send('Fail to update user by id');
 	}
 };
 
