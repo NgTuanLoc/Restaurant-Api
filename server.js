@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 
 import UserRouter from './routes/UserRoute.js';
+import RestaurantRouter from './routes/RestaurantRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,7 +14,11 @@ app.use(express.json());
 app.use(morgan('tiny'));
 
 // Routes
-app.use('/v1', UserRouter);
+app.use('/api/v1', UserRouter);
+app.use('/api/v1', RestaurantRouter);
+app.use('/', (req, res) => {
+	res.send('API');
+});
 
 const start = async (req, res) => {
 	try {
