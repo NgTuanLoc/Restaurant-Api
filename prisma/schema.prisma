@@ -82,4 +82,6 @@ model LikeRestaurant {
   restaurantId String
   user         User       @relation(fields: [userId], references: [id])
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@unique([restaurantId, userId])
 }

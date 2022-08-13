@@ -4,6 +4,7 @@ import morgan from 'morgan';
 
 import UserRouter from './routes/UserRoute.js';
 import RestaurantRouter from './routes/RestaurantRoute.js';
+import LikeRouter from './routes/LikeRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -16,6 +17,7 @@ app.use(morgan('tiny'));
 // Routes
 app.use('/api/v1', UserRouter);
 app.use('/api/v1', RestaurantRouter);
+app.use('/api/v1', LikeRouter);
 app.use('/', (req, res) => {
 	res.send('API');
 });
