@@ -1,27 +1,56 @@
 import { PrismaClient } from '@prisma/client';
 import { StatusCodes } from 'http-status-codes';
 
+import { transformQuery } from '../utils/transformQuery.js';
+
 const prisma = new PrismaClient();
 
-const createLike = async (req, res) => {
+const toggleLike = async (req, res) => {
 	try {
 		const { userId, restaurantId } = req.body;
-		const data = await prisma.likeRestaurant.create({
-			data: { userId, restaurantId },
+
+		const existedLike = await prisma.likeRestaurant.findFirst({
+			where: {
+				restaurantId: restaurantId,
+				userId: userId,
+			},
 		});
-		res.status(StatusCodes.OK).send(data);
+
+		if (existedLike) {
+			await prisma.likeRestaurant.delete({
+				where: {
+					id: existedLike.id,
+				},
+			});
+			res.status(StatusCodes.OK).send('dislike');
+		} else {
+			await prisma.likeRestaurant.create({
+				data: { userId, restaurantId },
+			});
+			res.status(StatusCodes.OK).send('like');
+		}
 	} catch (error) {
+		console.log(error);
 		res.status(StatusCodes.INTERNAL_SERVER_ERROR).send('Fail like restaurant');
 	}
 };
 
 const getAllLike = async (req, res) => {
+	const { restaurant, user } = req.query;
+
 	const data = await prisma.likeRestaurant.findMany({
+		where: {
+			user: { fullName: transformQuery(user) },
+			restaurant: {
+				name: transformQuery(restaurant),
+			},
+		},
 		include: {
 			user: true,
 			restaurant: true,
 		},
 	});
+
 	res.status(200).send(data);
 };
 
@@ -69,30 +98,4 @@ const deleteLikeById = async (req, res) => {
 	}
 };
 
-const updateLikeById = async (req, res) => {
-	try {
-		const { id } = req.params;
-		const { name, image, desc } = req.body;
-		const data = await prisma.restaurant.findFirst(id);
-
-		if (data) {
-			await prisma.restaurant.update({
-				where: { id: id },
-				data: {
-					name,
-					image,
-					desc,
-				},
-			});
-			res.status(StatusCodes.OK).send(`Update restaurant ${id} successful`);
-		} else {
-			res.status(StatusCodes.NOT_FOUND).send(`Update restaurant ${id} failed`);
-		}
-	} catch (error) {
-		res
-			.status(StatusCodes.INTERNAL_SERVER_ERROR)
-			.send('Fail to update restaurant by id');
-	}
-};
-
-export { createLike, getAllLike, getLikeById, deleteLikeById };
+export { toggleLike, getAllLike, getLikeById, deleteLikeById };

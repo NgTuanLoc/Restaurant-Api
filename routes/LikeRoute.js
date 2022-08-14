@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-	createLike,
+	toggleLike,
 	getAllLike,
 	deleteLikeById,
 	getLikeById,
@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.route('/like').post(createLike).get(getAllLike);
+router.route('/like').post(toggleLike).get(getAllLike);
 router.route('/like/:id').delete(deleteLikeById).get(getLikeById);
 
 export default router;
