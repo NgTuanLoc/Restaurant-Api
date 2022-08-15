@@ -10,10 +10,11 @@ import {
 
 const router = express.Router();
 
-router.get('/restaurant', getAllRestaurant);
-router.get('/restaurant/:id', getRestaurantById);
-router.delete('/restaurant/:id', deleteRestaurantById);
-router.put('/restaurant/:id', updateRestaurantById);
-router.post('/restaurant', createRestaurant);
+router.route('/').get(getAllRestaurant).post(createRestaurant);
+router
+	.route('/:id')
+	.get(getRestaurantById)
+	.delete(deleteRestaurantById)
+	.put(updateRestaurantById);
 
 export default router;

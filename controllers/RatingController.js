@@ -3,13 +3,29 @@ import { StatusCodes } from 'http-status-codes';
 
 const prisma = new PrismaClient();
 
-const createRating = async (req, res) => {
+const toggleRating = async (req, res) => {
 	try {
 		const { userId, restaurantId, amount } = req.body;
-		const data = await prisma.ratingRestaurant.create({
-			data: { userId, restaurantId, amount },
+		const data = await prisma.ratingRestaurant.findFirst({
+			where: {
+				userId,
+				restaurantId,
+			},
 		});
-		res.status(StatusCodes.OK).send(data);
+
+		if (!data) {
+			await prisma.ratingRestaurant.create({
+				data: { userId, restaurantId, amount },
+			});
+			res.status(StatusCodes.OK).send('Create rating successful');
+			return;
+		}
+		await prisma.ratingRestaurant.delete({
+			where: {
+				id: data.id,
+			},
+		});
+		res.status(StatusCodes.OK).send('Remove rating successful');
 	} catch (error) {
 		res
 			.status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -74,16 +90,14 @@ const deleteRatingById = async (req, res) => {
 const updateRatingById = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const { name, image, desc } = req.body;
+		const { amount } = req.body;
 		const data = await prisma.ratingRestaurant.findFirst(id);
 
 		if (data) {
-			await prisma.restaurant.update({
+			await prisma.ratingRestaurant.update({
 				where: { id: id },
 				data: {
-					name,
-					image,
-					desc,
+					amount: Number(amount),
 				},
 			});
 			res.status(StatusCodes.OK).send(`Update rating ${id} successful`);
@@ -97,4 +111,10 @@ const updateRatingById = async (req, res) => {
 	}
 };
 
-export { createRating, getAllRating, getRatingById, deleteRatingById };
+export {
+	toggleRating,
+	getAllRating,
+	getRatingById,
+	deleteRatingById,
+	updateRatingById,
+};

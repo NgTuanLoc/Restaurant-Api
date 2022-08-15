@@ -85,3 +85,4 @@ model LikeRestaurant {
 
   @@unique([restaurantId, userId])
 }
+
